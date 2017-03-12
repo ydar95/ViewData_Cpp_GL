@@ -26,7 +26,6 @@ void reshape(int w, int h) {
 void display() {
 	auto t = CTime::GetMicroS();
 	glClear(GL_COLOR_BUFFER_BIT);
-	//glColor3f(1.0, 0.0, 0.0);
 
 	double bias_x = 0;
 	for (int i = 0; i < dd_ary.size(); i++) {
@@ -52,15 +51,12 @@ void move(int x, int y) {
 		wc.Move(mouse_last_x, mouse_last_y, x, y);
 		mouse_last_x = x;
 		mouse_last_y = y;
-		//cout << "move" << endl;
-		//if(inc++%2==0)
-			display();
+		display();
 	}
 }
 void mouse(int button, int state, int x, int y) {
 	double s = 1.1;
 	double _s = 1.0 / s;
-	//cout << "button:" << button << " , " << "state:" << state << " , " << "x:" << x << "\t, " << "y:" << y << endl;
 	mouse_button = button;
 	mouse_state = state;
 	if (button == 0 && state == 0) {
@@ -78,7 +74,7 @@ void mouse(int button, int state, int x, int y) {
 		cout << "x:" << p.x << "\t y:" << p.y << endl;
 	}
 }
-int main(int argc, char *argv[]) {
+int  main(int argc, char *argv[]) {
 	int w = 1280;int h = 720;
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_SINGLE);
@@ -91,8 +87,12 @@ int main(int argc, char *argv[]) {
 	glutDisplayFunc(display);
 	glutKeyboardUpFunc([](unsigned char key, int x, int y) {if (char(key) == 'z') { display_index ^= 1;display(); }});
 	printf("%s\n", glGetString(GL_VENDOR));
-	dd.Open("E:\\ViewData_Cpp_GL\\1.txt");
-	for (int i = 0; i < 10; i++)
+
+	auto t0 = CTime::GetMicroS();
+	dd.Open("F:\\ViewData_Cpp_GL\\1.bin");
+	auto t1 = CTime::GetMicroS();
+	cout << t1 - t0 << endl;
+	for (int i = 0; i < 1; i++)
 		dd_ary.push_back(dd);
 	wc = WindowControl(w, h, 0, dd._mtx[0].size(), dd._data_min, dd._data_max);
 	glutMainLoop();

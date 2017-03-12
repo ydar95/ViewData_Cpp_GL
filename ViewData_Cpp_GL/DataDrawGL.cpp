@@ -17,55 +17,11 @@ void DataDrawGL::Open(const std::string& filename) {
 	this->_data_max = (numeric_limits<GLdouble>::min)();
 	this->_data_min = (numeric_limits<GLdouble>::max)();
 
-	this->load_data(filename);
+	this->load_bin_data(filename);
+
 	this->create_vec();
 	this->create_vbo_curve();
 }
-
-void DataDrawGL::load_data(const std::string& filename) {
-	ifstream ifs;
-	stringstream ss;
-	string str_line;
-	Line data_line;
-	double val;
-	_mtx.clear();
-	_mtx.reserve(20000);
-	ifs.open(filename);
-	double max_val = (numeric_limits<double>::min)();
-	double min_val = (numeric_limits<double>::max)();
-	int inc = 0;
-	int len = 0;
-	if (ifs.good()) {
-		ss.clear();
-		getline(ifs, str_line);
-		ss << str_line;
-		while (ss >> val) {
-			len++;
-		}
-	}
-	ifs.close();
-	FILE *c_ifs;
-	c_ifs = fopen(filename.c_str(), "r");
-	data_line.resize(len);
-	while (!feof(c_ifs)) {
-		//data_line.clear();
-		for (int i = 0;i < len;i++) {
-			fscanf(c_ifs, "%lf", &val);
-			data_line[i] = val;
-			max_val = max(max_val, val);
-			min_val = min(min_val, val);
-		}
-		_mtx.push_back(data_line);
-
-	}
-	fclose(c_ifs);
-
-	this->_data_max = max_val;
-	this->_data_min = min_val;
-	this->mat_transpose(this->_mtx, this->_mtx);
-	this->get_all_curve_maxmin();
-}
-
 void DataDrawGL::mat_transpose(const  DataDrawGL::Mat&src, DataDrawGL::Mat&dst) {
 	auto h = src.size();
 	auto w = src[0].size();
@@ -197,4 +153,81 @@ void DataDrawGL::DrawCurve(int index) {
 	else if(index==2){
 		glDrawElements(GL_QUADS, _indexs_color.size(), GL_UNSIGNED_INT, ((GLuint*)NULL + (0)));
 	}
+}
+
+void DataDrawGL::NoramlData2BinData(const std::string &normal_filename, const std::string &bin_filename) {
+	ifstream normal_ifs;
+	stringstream ss;
+	string str_line;
+	Line data_line;
+	double val;
+	Mat tmp_mtx;
+	normal_ifs.open(normal_filename);
+	double max_val = (numeric_limits<double>::min)();
+	double min_val = (numeric_limits<double>::max)();
+	int32_t nums = 0;
+	int32_t len = 0;
+	if (normal_ifs.good()) {
+		ss.clear();
+		getline(normal_ifs, str_line);
+		ss << str_line;
+		while (ss >> val) {
+			len++;
+		}
+	}
+	normal_ifs.close();
+	FILE *c_ifs;
+	c_ifs = fopen(normal_filename.c_str(), "r");
+	data_line.resize(len);
+	while (!feof(c_ifs)) {
+		for (int i = 0; i < len; i++) {
+			fscanf(c_ifs, "%lf", &val);
+			data_line[i] = val;
+			max_val = max(max_val, val);
+			min_val = min(min_val, val);
+		}
+		nums++;
+		tmp_mtx.push_back(data_line);
+	}
+	fclose(c_ifs);
+	this->mat_transpose(tmp_mtx, tmp_mtx);
+	// 因为上面这条,矩阵转置,所以len 和 nums 交换
+	std::swap(nums, len);
+	//生成bin数据
+	ofstream bin_ofs(bin_filename, std::ios::binary);
+	
+	/*	bias(b) 0---31  32---63	 64---127  128---191
+	 *			nums	len		  max_val    min_val 
+	 *			192~~~~end
+	 *			data(double)
+	 *	@yd 数据储存格式
+	 */
+
+
+
+	bin_ofs.write(reinterpret_cast<const char*>(&nums), sizeof(int32_t));
+	bin_ofs.write(reinterpret_cast<const char*>(&len), sizeof(int32_t));
+	bin_ofs.write(reinterpret_cast<const char*>(&max_val), sizeof(double));
+	bin_ofs.write(reinterpret_cast<const char*>(&min_val), sizeof(double));
+	for (auto&line : tmp_mtx) {
+		bin_ofs.write(reinterpret_cast<const char*>(line.data()), len * sizeof(double));
+	}
+	bin_ofs.close();
+}
+
+void DataDrawGL::load_bin_data(const std::string&bin_filename) {
+	int32_t len, nums;
+	ifstream bin_ifs(bin_filename, std::ios::binary);
+	bin_ifs.read(reinterpret_cast<char*>(&nums), sizeof(int32_t));
+	bin_ifs.read(reinterpret_cast<char*>(&len), sizeof(int32_t));
+
+	bin_ifs.read(reinterpret_cast<char*>(&(this->_data_max)), sizeof(double));
+	bin_ifs.read(reinterpret_cast<char*>(&(this->_data_min)), sizeof(double));
+
+	this->_mtx = Mat(nums, Line(len, 0.0));
+	for (auto&line : this->_mtx) {
+		bin_ifs.read(reinterpret_cast<char*>(line.data()), sizeof(double)*len);
+	}
+
+	this->get_all_curve_maxmin();
 }

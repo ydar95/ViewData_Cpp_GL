@@ -1,7 +1,3 @@
-/*
-
- */
-
 
 #ifndef _YDAR_HEAD_DATA_DRAW_GL_H_
 #define _YDAR_HEAD_DATA_DRAW_GL_H_ 1
@@ -30,10 +26,10 @@ public:
 			z = _z;
 		}
 	};
-	typedef std::vector<double>	Line;	//一行
-	typedef std::vector<Line>	Mat;	//一个矩阵
-	typedef std::vector<Vec3d>	Vec_Vec3d;
-	typedef WindowControl::Point2d Point2d;
+	typedef std::vector<double>		Line;	//一行
+	typedef std::vector<Line>		Mat;	//一个矩阵
+	typedef std::vector<Vec3d>		Vec_Vec3d;
+	typedef WindowControl::Point2d	Point2d;
 	typedef std::vector<Point2d>	Vec_Vec2d;
 //private:
 	Mat _mtx;
@@ -58,11 +54,15 @@ public:
 public:
 	void Open(const std::string&);
 	void DrawCurve(int index);
+
+	// 将ascii数据保存为 二进制数据 ,二进制数据结构具体写在 该函数的实现中;
+	static void NoramlData2BinData(const std::string &, const std::string &);
+	
 private:
-	void load_data(const std::string&);
 	void mat_transpose(const Mat&, Mat&);
 	void get_all_curve_maxmin();
 	void create_vec();
 	void create_vbo_curve();
+	void load_bin_data(const std::string&);
 };
 #endif
