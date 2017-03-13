@@ -89,7 +89,8 @@ int  main(int argc, char *argv[]) {
 	printf("%s\n", glGetString(GL_VENDOR));
 
 	auto t0 = CTime::GetMicroS();
-	dd.Open("F:\\ViewData_Cpp_GL\\1.bin");
+	//DataDrawGL::NoramlData2BinData("../1.txt", "../1.bin");
+	dd.Open("../1.bin");
 	auto t1 = CTime::GetMicroS();
 	cout << t1 - t0 << endl;
 	for (int i = 0; i < 1; i++)

@@ -15,8 +15,8 @@ DataDrawGL::DataDrawGL(const std::string& filename) {
 }
 
 void DataDrawGL::Open(const std::string& filename) {
-	this->_data_max = (numeric_limits<GLdouble>::min)();
-	this->_data_min = (numeric_limits<GLdouble>::max)();
+
+
 
 	this->load_bin_data(filename);
 
@@ -194,22 +194,39 @@ void DataDrawGL::NoramlData2BinData(const std::string &normal_filename, const st
 	mat_transpose(tmp_mtx, tmp_mtx);
 	// 因为上面这条,矩阵转置,所以len 和 nums 交换
 	std::swap(nums, len);
+
+	Vec_Vec2d min_max_ary;
+	for (const auto&line : tmp_mtx) {
+		GLdouble curve_max_val = (numeric_limits<GLdouble>::min)();
+		GLdouble curve_min_val = (numeric_limits<GLdouble>::max)();
+		for (const auto&val : line) {
+			curve_max_val = max(curve_max_val, val);
+			curve_min_val = min(curve_min_val, val);
+		}
+		min_max_ary.push_back(DataDrawGL::Point2d(curve_min_val, curve_max_val));
+	}
+
+
 	//生成bin数据
 	ofstream bin_ofs(bin_filename, std::ios::binary);
 	
 	/*	bias(b) 0---31  32---63	 64---127  128---191
 	 *			nums	len		  max_val    min_val 
-	 *			192~~~~end
+	 *			192~~~~192+nums*sizeof(double)*2-1			
+	 *			<line_min,line_max>*nums
+	 *			192+nums*sizeof(double)*2~~~~end
 	 *			data(double)
 	 *	@yd 数据储存格式
 	 */
-
 
 
 	bin_ofs.write(reinterpret_cast<const char*>(&nums), sizeof(int32_t));
 	bin_ofs.write(reinterpret_cast<const char*>(&len), sizeof(int32_t));
 	bin_ofs.write(reinterpret_cast<const char*>(&max_val), sizeof(double));
 	bin_ofs.write(reinterpret_cast<const char*>(&min_val), sizeof(double));
+
+	bin_ofs.write(reinterpret_cast<const char*>(min_max_ary.data()), min_max_ary.size() * sizeof(DataDrawGL::Point2d));
+
 	for (auto&line : tmp_mtx) {
 		bin_ofs.write(reinterpret_cast<const char*>(line.data()), len * sizeof(double));
 	}
@@ -225,10 +242,11 @@ void DataDrawGL::load_bin_data(const std::string&bin_filename) {
 	bin_ifs.read(reinterpret_cast<char*>(&(this->_data_max)), sizeof(double));
 	bin_ifs.read(reinterpret_cast<char*>(&(this->_data_min)), sizeof(double));
 
+	this->_curve_max_min_ary = Vec_Vec2d(nums);
+	bin_ifs.read(reinterpret_cast<char*>(this->_curve_max_min_ary.data()), sizeof(DataDrawGL::Point2d)*nums);
+
 	this->_mtx = Mat(nums, Line(len, 0.0));
 	for (auto&line : this->_mtx) {
 		bin_ifs.read(reinterpret_cast<char*>(line.data()), sizeof(double)*len);
 	}
-
-	this->get_all_curve_maxmin();
 }
