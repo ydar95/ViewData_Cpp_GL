@@ -39,25 +39,24 @@ void DataDrawGL::mat_transpose(const  DataDrawGL::Mat&src, DataDrawGL::Mat&dst) 
 	dst = _dst;
 }
 
-void DataDrawGL::get_all_curve_maxmin(){
-	this->_curve_max_min_ary.clear();
-	for (const auto&line : this->_mtx) {
-		GLdouble max_val = (numeric_limits<GLdouble>::min)();
-		GLdouble min_val = (numeric_limits<GLdouble>::max)();
-		for (const auto&val : line) {
-			max_val = max(max_val, val);
-			min_val = min(min_val, val);
-		}
-		this->_curve_max_min_ary.push_back(DataDrawGL::Point2d(min_val, max_val));
-	}
-}
+
 
 void DataDrawGL::create_vec() {
 	//µ¼Èëµã
 	GLuint inc=0;
+
+	int sum = this->_mtx.size()*this->_mtx[0].size()+100;
+	this->_vec.reserve(sum);
+	this->_indexs_curve.reserve(sum);
+	this->_colour.reserve(sum);
+	this->_vec_color.reserve(sum);
+
 	for (int y = 0;y < this->_mtx.size();++y) {
 		double max_val = _curve_max_min_ary[y].x;
 		double min_val = _curve_max_min_ary[y].y;
+
+		
+
 		for (int x = 0;x < this->_mtx[y].size();++x) {
 			this->_vec.push_back(Point2d(x, _mtx[y][x]));
 			this->_indexs_curve.push_back(inc++);
@@ -77,6 +76,7 @@ void DataDrawGL::create_vec() {
 	this->_curve_colour = Vec_Vec3d(inc, Vec3d(1, 0, 0));
 
 
+	_indexs_color.resize(4 * sum);
 	for (auto i = 0;i < this->_mtx.size() - 1;i++) {
 		int _w = this->_mtx[i].size();
 		for (auto j = 0;j < _w - 1;j++) {

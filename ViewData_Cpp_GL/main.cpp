@@ -93,7 +93,7 @@ int  main(int argc, char *argv[]) {
 	dd.Open("../1.bin");
 	auto t1 = CTime::GetMicroS();
 	cout << t1 - t0 << endl;
-	for (int i = 0; i < 1; i++)
+	for (int i = 0; i < 10; i++)
 		dd_ary.push_back(dd);
 	wc = WindowControl(w, h, 0, dd._mtx[0].size(), dd._data_min, dd._data_max);
 	glutMainLoop();

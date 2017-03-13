@@ -60,7 +60,7 @@ public:
 	
 private:
 	static void mat_transpose(const Mat&, Mat&);
-	void get_all_curve_maxmin();
+
 	void create_vec();
 	void create_vbo_curve();
 	void load_bin_data(const std::string&);
