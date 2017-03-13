@@ -1,6 +1,8 @@
 // ------------------------------  header file -----------------------
+#pragma once
 #ifndef _HEAD_CTime
-#define _HEAD_CTime 1
+
+#define _HEAD_CTime
 #include <Windows.h>
 class CTime
 {

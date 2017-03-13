@@ -59,7 +59,7 @@ public:
 	static void NoramlData2BinData(const std::string &, const std::string &);
 	
 private:
-	void mat_transpose(const Mat&, Mat&);
+	static void mat_transpose(const Mat&, Mat&);
 	void get_all_curve_maxmin();
 	void create_vec();
 	void create_vbo_curve();

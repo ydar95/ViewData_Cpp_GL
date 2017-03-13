@@ -8,6 +8,7 @@
 #include<limits> 
 #include<algorithm>
 #include<gl/glew.h>
+
 using namespace std;
 DataDrawGL::DataDrawGL(const std::string& filename) {
 	this->Open(filename);
@@ -65,7 +66,7 @@ void DataDrawGL::create_vec() {
 			//在伪彩色图中对应的点越趋向于 红色；亮度越低，则对应的伪彩色越趋向于 蓝色；总体上按照灰度值高低，由红渐变至蓝，中间色为绿色。
 			double red =  color;
 			double green = color < 0.5 ? color : 1 - color;
-			green = std::min(green * 2, 1.0);
+			green = min(green * 2, 1.0);
 			double blue = 1 - color;
 			_colour.push_back(Vec3d(red, green, blue));
 			//_colour.push_back(Vec3d(color, color, color));	//灰度图
@@ -190,7 +191,7 @@ void DataDrawGL::NoramlData2BinData(const std::string &normal_filename, const st
 		tmp_mtx.push_back(data_line);
 	}
 	fclose(c_ifs);
-	this->mat_transpose(tmp_mtx, tmp_mtx);
+	mat_transpose(tmp_mtx, tmp_mtx);
 	// 因为上面这条,矩阵转置,所以len 和 nums 交换
 	std::swap(nums, len);
 	//生成bin数据
