@@ -146,6 +146,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Count.cpp" />
+    <None Include="_DataDrawGL.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
     <ClCompile Include="DataDrawGL.cpp" />
     <ClCompile Include="WindowControl.cpp" />
     <ClCompile Include="main.cpp" />
@@ -153,6 +157,9 @@
   <ItemGroup>
     <ClInclude Include="Count.h" />
     <ClInclude Include="DataDrawGL.h" />
+    <None Include="_DataDrawGL.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
     <ClInclude Include="WindowControl.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

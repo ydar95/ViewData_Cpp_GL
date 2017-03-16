@@ -4,13 +4,13 @@
 #include<vector>
 #include<string>
 #include<iostream>
-#include"DataDrawGL.h"
+//#include"DataDrawGL.h"
 #include"WindowControl.h"
 #include"Count.h"
 using namespace std;
 
-DataDrawGL dd;
-vector <DataDrawGL> dd_ary;
+//DataDrawGL dd;
+//vector <DataDrawGL> dd_ary;
 WindowControl wc;
 
 //鼠标
@@ -28,6 +28,7 @@ void display() {
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	double bias_x = 0;
+	/*
 	for (int i = 0; i < dd_ary.size(); i++) {
 		glPushMatrix();	//在当前 gl 的状态上 复制一个新的状态 
 		glLoadIdentity();// 初始化矩阵
@@ -39,7 +40,7 @@ void display() {
 		bias_x += dd_ary[i]._mtx[0].size();
 		glPopMatrix();
 	}
-
+	*/
 	glFinish();
 	t = CTime::GetMicroS() - t;
 	cout << "display(us):\t" << t << endl;
@@ -90,12 +91,12 @@ int  main(int argc, char *argv[]) {
 
 	auto t0 = CTime::GetMicroS();
 	//DataDrawGL::NoramlData2BinData("../1.txt", "../1.bin");
-	dd.Open("../1.bin");
+	//dd.Open("../1.bin");
 	auto t1 = CTime::GetMicroS();
 	cout << t1 - t0 << endl;
-	for (int i = 0; i < 10; i++)
-		dd_ary.push_back(dd);
-	wc = WindowControl(w, h, 0, dd._mtx[0].size(), dd._data_min, dd._data_max);
+	//for (int i = 0; i < 10; i++)
+		//dd_ary.push_back(dd);
+	wc = WindowControl(w, h, 0, 1000, 0, 1);
 	glutMainLoop();
 	return 0;
 

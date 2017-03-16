@@ -21,6 +21,9 @@
     <ClCompile Include="WindowControl.cpp">
       <Filter>头文件</Filter>
     </ClCompile>
+    <ClCompile Include="Count.cpp">
+      <Filter>头文件</Filter>
+    </ClCompile>
     <ClCompile Include="DataDrawGL.cpp">
       <Filter>头文件</Filter>
     </ClCompile>
@@ -35,5 +38,13 @@
     <ClInclude Include="DataDrawGL.h">
       <Filter>头文件</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="_DataDrawGL.h">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="_DataDrawGL.cpp">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
 </Project>
