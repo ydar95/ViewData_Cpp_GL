@@ -43,11 +43,11 @@ private:
 	typedef std::vector<RealType>	Line;
 	typedef std::vector<Line>		Mat;
 private:
-	std::shared_ptr<RealType>	data_;			//	ps:抛弃 Mat Line 模式，
+	std::shared_ptr<RealType>	_data;			//	ps:抛弃 Mat Line 模式，
 
 	Vec_Vec2					_curve_vec;		//	曲线数据映射的坐标点 映射范围 [0:len,min,max]
 	Vec_Vec3					_curve_colour;	//	曲线数据颜色
-	std::vector<GLuint>			_indexs_curve;	//	vbo需要的渲染顺序索引
+	std::vector<GLuint>			_curve_indexs;	//	vbo需要的渲染顺序索引
 
 	Vec_Vec2					_vec_color;
 	std::vector<RealType>		_gray;
@@ -57,8 +57,10 @@ private:
 	uint32_t					vao[2];
 	uint32_t					vbo[6];
 public:
-	GLdouble					_data_min;		//数据中最小的
-	GLdouble					_data_max;		//数据中最大的
+	int32_t						_nums;			//	曲线数量
+	int32_t						_len;			//	曲线节点数量
+	RealType					_data_min;		//	数据中最小的
+	RealType					_data_max;		//	数据中最大的
 	std::vector<Vec2>			_curve_max_min_ary;
 public:
 	DataDrawGL() {}
@@ -74,7 +76,7 @@ private:
 	static void mat_transpose(const Mat&, Mat&);
 
 	void create_curve_data();
-	void create_vbo_curve();
+	void create_curve_vbo();
 	void load_bin_data(const std::string&);
 };
 #endif

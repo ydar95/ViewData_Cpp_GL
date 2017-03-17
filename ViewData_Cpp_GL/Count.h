@@ -4,6 +4,7 @@
 
 #define _HEAD_CTime
 #include <Windows.h>
+#include <iostream>
 class CTime
 {
 private:
@@ -18,5 +19,9 @@ private:
 	static CTime m_self;
 };
 
+#define CTIME_COUNT_MILLIS(func)	\
+			auto t1=CTime::GetMicroS();	\
+			func			   ;	\
+			std::cout<<CTime::GetMicroS()-t1<<endl;
 
 #endif // !_HEAD_CTime
