@@ -45,9 +45,9 @@ private:
 private:
 	std::shared_ptr<RealType>	_data;			//	ps:抛弃 Mat Line 模式，
 
-	Vec_Vec2					_curve_vec;		//	曲线数据映射的坐标点 映射范围 [0:len,min,max]
-	Vec_Vec3					_curve_colour;	//	曲线数据颜色
-	std::vector<GLuint>			_curve_indexs;	//	vbo需要的渲染顺序索引
+	std::shared_ptr<Vec2>		_curve_vec;		//	曲线数据映射的坐标点 映射范围 [0:len,min,max]
+	//Vec_Vec3					_curve_colour;	//	曲线数据颜色
+	std::shared_ptr<GLuint>		_curve_indexs;	//	vbo需要的渲染顺序索引
 
 	Vec_Vec2					_vec_color;
 	std::vector<RealType>		_gray;

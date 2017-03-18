@@ -112,7 +112,7 @@ void DataDrawGL::load_bin_data(const std::string& bin_filename) {
 	fread(reinterpret_cast<char*>(&(this->_data_min)), sizeof(RealType), 1, ifs);
 	this->_curve_max_min_ary.resize(_nums);
 	fread(reinterpret_cast<char*>(this->_curve_max_min_ary.data()), sizeof(DataDrawGL::Vec2), _nums, ifs);
-	this->_data = std::shared_ptr<RealType>(new RealType[_nums*_len], std::default_delete<RealType[]>());
+	this->_data.reset(new RealType[_nums*_len], std::default_delete<RealType[]>());
 	fread(reinterpret_cast<char*>(_data.get()), sizeof(RealType)*_len*_nums,1 , ifs);
 
 	fclose(ifs);
@@ -129,6 +129,7 @@ void DataDrawGL::Open(const std::string& filename) {
 
 void DataDrawGL::DrawCurve(int index) {
 	glBindVertexArray(vao[0]);
+	glColor3f(0.5, 0.8, 0.1);
 	int bias = 0;
 	for (int i = 0; i < _nums; i++) {
 		glDrawElements(GL_LINE_STRIP, _len, GL_UNSIGNED_INT, ((GLuint*)NULL + (bias)));
@@ -137,17 +138,16 @@ void DataDrawGL::DrawCurve(int index) {
 }
 
 void DataDrawGL::create_curve_data() {
-	_curve_vec.clear();
-	_curve_indexs.clear();
-	_curve_vec.reserve(_nums*_len);
-	_curve_colour=vector<Vec3>(_nums*_len,Vec3(1.0,0.2,0.3));
-	_curve_indexs.reserve(_nums*_len);
-	auto ptr = _data.get();
+	_curve_indexs.reset(new GLuint[_nums*_len], std::default_delete<GLuint[]>());
+	_curve_vec.reset(new Vec2[_nums*_len], std::default_delete<Vec2[]>());
+	auto _data_ptr = _data.get();
+	auto _vec_ptr = _curve_vec.get();
+	auto _indexs_ptr = _curve_indexs.get();
 	int  inc = 0;
 	for (uint32_t num = 0; num < _nums; ++num) {
 		for (uint32_t index = 0; index < _len; ++index) {
-			_curve_vec.push_back(Vec2(index, *(ptr++)));
-			_curve_indexs.push_back(inc++);
+			*(_vec_ptr++)=Vec2(index, *(_data_ptr++));
+			*(_indexs_ptr++) = inc++;
 		}
 	}
 }
@@ -166,16 +166,16 @@ void DataDrawGL::create_curve_vbo() {
 	glGenBuffers(3, vbo + 0);
 	//顶点
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-	glBufferData(GL_ARRAY_BUFFER, _curve_vec.size() * sizeof(Vec2), _curve_vec.data(), GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, _nums*_len * sizeof(Vec2), _curve_vec.get(), GL_DYNAMIC_DRAW);
 	glVertexPointer(2, GL_FLOAT, 0, nullptr);
 	glEnableClientState(GL_VERTEX_ARRAY);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-	glBufferData(GL_ARRAY_BUFFER, _curve_colour.size() * sizeof(Vec3), _curve_colour.data(), GL_DYNAMIC_DRAW);
-	glColorPointer(3, GL_FLOAT, 0, nullptr);
-	glEnableClientState(GL_COLOR_ARRAY);
+	//glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+	//glBufferData(GL_ARRAY_BUFFER, _curve_colour.size() * sizeof(Vec3), _curve_colour.data(), GL_DYNAMIC_DRAW);
+	//glColorPointer(3, GL_FLOAT, 0, nullptr);
+	//glEnableClientState(GL_COLOR_ARRAY);
 
 	// GL_ELEMENT_ARRAY_BUFFER（表示索引数据），用索引数据初始化缓冲区对象
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[2]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, _curve_indexs.size() * sizeof(GLuint), _curve_indexs.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, _nums*_len * sizeof(GLuint), _curve_indexs.get(), GL_STATIC_DRAW);
 }
