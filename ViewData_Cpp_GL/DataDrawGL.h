@@ -16,6 +16,8 @@ private:
 		enum_color,
 		enum_gary
 	};
+	uint32_t buff_len;
+	uint32_t buff_nums;
 public:
 	typedef typename				GLfloat RealType;
 	struct Vec3 {
@@ -63,8 +65,22 @@ public:
 	RealType					_data_max;		//	数据中最大的
 	std::vector<Vec2>			_curve_max_min_ary;
 public:
-	DataDrawGL() {}
-	DataDrawGL(const std::string&bin_filename) { Open(bin_filename);}
+	DataDrawGL():buff_len(20000),buff_nums(200){
+		_curve_indexs.reset(new GLuint[buff_len*buff_nums], std::default_delete<GLuint[]>());
+		_curve_vec.reset(new Vec2[buff_len*buff_nums], std::default_delete<Vec2[]>());
+		vao[0] = vao[1] = 0;
+		vbo[0] = vbo[1] = vbo[2] = vbo[3] = vbo[4] = vbo[5] = 0;
+		create_curve_buff();
+	}
+	~DataDrawGL() {
+		if (vbo[0] != 0) {
+			glDeleteBuffers(3, vbo);
+			vbo[0] = vbo[1] = vbo[2] = 0;
+		}
+		if (vao[0] != 0) {
+			glDeleteVertexArrays(1, &vao[0]);
+		}
+	}
 public:
 	void Open(const std::string&);
 	void DrawCurve(int index);
@@ -73,10 +89,16 @@ public:
 	static void NoramlData2BinData(const std::string &, const std::string &);
 
 private:
+	
+
+
 	static void mat_transpose(const Mat&, Mat&);
 
 	void create_curve_data();
 	void create_curve_vbo();
+	void create_curve_buff();
+
+
 	void load_bin_data(const std::string&);
 };
 #endif

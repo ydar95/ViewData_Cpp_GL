@@ -9,7 +9,7 @@
 #include"Count.h"
 using namespace std;
 
-DataDrawGL dd;
+
 //vector <DataDrawGL> dd_ary;
 WindowControl wc;
 
@@ -19,15 +19,14 @@ int mouse_state;
 int mouse_last_x;
 int mouse_last_y;
 int display_index=0;
-
+DataDrawGL *dd;
 void reshape(int w, int h) {
 	wc.Reshape(w, h);
 }
 void display() {
 	auto t = CTime::GetMicroS();
 	glClear(GL_COLOR_BUFFER_BIT);
-	dd.DrawCurve(1);
-
+	dd->DrawCurve(1);
 	/*
 	double bias_x = 0;
 	for (int i = 0; i < dd_ary.size(); i++) {
@@ -90,16 +89,18 @@ int  main(int argc, char *argv[]) {
 	glutKeyboardUpFunc([](unsigned char key, int x, int y) {if (char(key) == 'z') { display_index ^= 1;display(); }});
 	printf("%s\n", glGetString(GL_VENDOR));
 
-	auto t0 = CTime::GetMicroS();
+
 	//DataDrawGL::NoramlData2BinData("../1.txt", "../1.bin");
-	dd.Open("../1.bin");
+	
+	dd = new DataDrawGL();
+	auto t0 = CTime::GetMicroS();
+	dd->Open("../1.bin");
 	auto t1 = CTime::GetMicroS();
 	cout << t1 - t0 << endl;
 	//for (int i = 0; i < 10; i++)
 		//dd_ary.push_back(dd);
-	wc = WindowControl(w, h, 0, dd._len-1, dd._data_min, dd._data_max);
+	wc = WindowControl(w, h, 0, dd->_len-1, dd->_data_min, dd->_data_max);
 	glutMainLoop();
 	return 0;
-
 }
 #endif

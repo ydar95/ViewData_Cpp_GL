@@ -10,6 +10,7 @@
 #include<cmath>
 #include<limits> 
 #include<algorithm>
+#include<list>
 using namespace std;
 
 void DataDrawGL::NoramlData2BinData(const std::string &normal_filename, const std::string &bin_filename) {
@@ -100,10 +101,6 @@ void DataDrawGL::mat_transpose(const  DataDrawGL::Mat&src, DataDrawGL::Mat&dst) 
 	dst.clear();
 	dst = _dst;
 }
-
-
-
-
 void DataDrawGL::load_bin_data(const std::string& bin_filename) {
 	FILE *ifs = fopen(bin_filename.c_str(), "rb");
 	fread(reinterpret_cast<char*>(&_nums), sizeof(int32_t), 1, ifs);
@@ -117,16 +114,12 @@ void DataDrawGL::load_bin_data(const std::string& bin_filename) {
 
 	fclose(ifs);
 }
-
 void DataDrawGL::Open(const std::string& filename) {
 
 	this->load_bin_data(filename);
-	CTIME_COUNT_MILLIS(this->create_curve_data();)
-
+	this->create_curve_data();
 	this->create_curve_vbo();
-	
 }
-
 void DataDrawGL::DrawCurve(int index) {
 	glBindVertexArray(vao[0]);
 	glColor3f(0.5, 0.8, 0.1);
@@ -136,10 +129,7 @@ void DataDrawGL::DrawCurve(int index) {
 		bias += _len;
 	}
 }
-
 void DataDrawGL::create_curve_data() {
-	_curve_indexs.reset(new GLuint[_nums*_len], std::default_delete<GLuint[]>());
-	_curve_vec.reset(new Vec2[_nums*_len], std::default_delete<Vec2[]>());
 	auto _data_ptr = _data.get();
 	auto _vec_ptr = _curve_vec.get();
 	auto _indexs_ptr = _curve_indexs.get();
@@ -151,22 +141,46 @@ void DataDrawGL::create_curve_data() {
 		}
 	}
 }
-
 void DataDrawGL::create_curve_vbo() {
-	GLint err = glewInit();
-	if (err != GLEW_OK) {
+
+
+
+	//---------------			创建曲线
+	glBindVertexArray(vao[0]);
+	//glGenBuffers(3, vbo + 0);
+	//顶点
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, _nums*_len * sizeof(Vec2), _curve_vec.get());
+
+	//glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+	//glBufferData(GL_ARRAY_BUFFER, _curve_colour.size() * sizeof(Vec3), _curve_colour.data(), GL_DYNAMIC_DRAW);
+	//glColorPointer(3, GL_FLOAT, 0, nullptr);
+	//glEnableClientState(GL_COLOR_ARRAY);
+
+	// GL_ELEMENT_ARRAY_BUFFER（表示索引数据），用索引数据初始化缓冲区对象
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[2]);
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, _nums*_len * sizeof(GLuint), _curve_indexs.get());
+}
+void DataDrawGL::create_curve_buff() {
+	if (glewInit() != GLEW_OK) {
 		fprintf(stderr, "GLEW初始化失败！\n");
 		exit(EXIT_FAILURE);
 	}
+	if (vbo[0] != 0) {
+		glDeleteBuffers(3, vbo);
+		vbo[0] = vbo[1] = vbo[2] = 0;
+	}
+	if (vao[0] != 0) {
+		glDeleteVertexArrays(1, &vao[0]);
+	}
 
-	glGenVertexArrays(1, vao+0);
+	glGenVertexArrays(1, vao);
 
-	//---------------			创建曲线
 	glBindVertexArray(vao[0]);
 	glGenBuffers(3, vbo + 0);
 	//顶点
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-	glBufferData(GL_ARRAY_BUFFER, _nums*_len * sizeof(Vec2), _curve_vec.get(), GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, buff_nums*buff_len * sizeof(Vec2), nullptr, GL_DYNAMIC_DRAW_ARB);
 	glVertexPointer(2, GL_FLOAT, 0, nullptr);
 	glEnableClientState(GL_VERTEX_ARRAY);
 
@@ -177,5 +191,5 @@ void DataDrawGL::create_curve_vbo() {
 
 	// GL_ELEMENT_ARRAY_BUFFER（表示索引数据），用索引数据初始化缓冲区对象
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[2]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, _nums*_len * sizeof(GLuint), _curve_indexs.get(), GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, buff_nums*buff_len * sizeof(GLuint), nullptr, GL_DYNAMIC_DRAW_ARB);
 }
