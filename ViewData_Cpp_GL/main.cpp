@@ -61,6 +61,22 @@ void move(int x, int y) {
 		wc.Move(mouse_last_x, mouse_last_y, x, y);
 		mouse_last_x = x;
 		mouse_last_y = y;
+		int begin = (*ptr.get())[0].begin;
+		int end   = (*ptr.get())[0].end;
+		if (wc._x_min > end) {
+			ptr->moveRight();
+			ptr->getPrepareUpdataObject().dd.Open("../1.bin");
+			ptr->getPrepareUpdataObject().begin = (*ptr.get())[9].end;
+			ptr->getPrepareUpdataObject().end = ptr->getPrepareUpdataObject().begin + ptr->getPrepareUpdataObject().dd._len;
+		}
+		else if (wc._x_max < begin) {
+			ptr->moveLeft();
+			ptr->getPrepareUpdataObject().dd.Open("../1.bin");
+			ptr->getPrepareUpdataObject().end = (*ptr.get())[-9].begin;
+			ptr->getPrepareUpdataObject().begin = ptr->getPrepareUpdataObject().end - ptr->getPrepareUpdataObject().dd._len;
+		}
+
+
 		display();
 	}
 }
@@ -100,19 +116,20 @@ int  main(int argc, char *argv[]) {
 	//DataDrawGL::NoramlData2BinData("../1.txt", "../1.bin");
 	
 	ptr.reset(new CircularQueue<Node>());
+	CTIME_COUNT_MILLIS({
 	(*ptr.get())[0].dd.Open("../1.bin");
 	(*ptr.get())[0].begin = 0;
 	(*ptr.get())[0].end = (*ptr.get())[0].dd._len;
 	for (int i = 1; i <= 10; i++) {
 		(*ptr.get())[i].dd.Open("../1.bin");
 		(*ptr.get())[i].begin = (*ptr.get())[i - 1].end;
-		(*ptr.get())[i].end = (*ptr.get())[i].begin+(*ptr.get())[i].dd._len;
+		(*ptr.get())[i].end = (*ptr.get())[i].begin + (*ptr.get())[i].dd._len;
 
 		(*ptr.get())[-i].dd.Open("../1.bin");
 		(*ptr.get())[-i].end = (*ptr.get())[-i + 1].begin;
 		(*ptr.get())[-i].begin = (*ptr.get())[-i].end - (*ptr.get())[-i].dd._len;
 	}
-		
+	});
 	wc = WindowControl(w, h, 0, (*ptr.get())[0].dd._len, (*ptr.get())[0].dd._data_min, (*ptr.get())[0].dd._data_max);
 	glutMainLoop();
 	return 0;
