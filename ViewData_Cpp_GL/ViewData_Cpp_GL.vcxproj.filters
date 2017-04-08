@@ -27,6 +27,9 @@
     <ClCompile Include="DataDrawGL.cpp">
       <Filter>头文件</Filter>
     </ClCompile>
+    <ClCompile Include="CircularQueue.cpp">
+      <Filter>头文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Count.h">
@@ -36,6 +39,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="DataDrawGL.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CircularQueue.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

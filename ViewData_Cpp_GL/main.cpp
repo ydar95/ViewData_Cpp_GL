@@ -4,10 +4,20 @@
 #include<vector>
 #include<string>
 #include<iostream>
+#include<memory>
 #include"DataDrawGL.h"
 #include"WindowControl.h"
 #include"Count.h"
+#include"CircularQueue.h"
 using namespace std;
+
+struct Node
+{
+	DataDrawGL dd;
+	int32_t begin;
+	int32_t end;
+};
+std::shared_ptr<CircularQueue<Node>> ptr;
 
 
 //vector <DataDrawGL> dd_ary;
@@ -19,28 +29,27 @@ int mouse_state;
 int mouse_last_x;
 int mouse_last_y;
 int display_index=0;
-DataDrawGL *dd;
+
 void reshape(int w, int h) {
 	wc.Reshape(w, h);
 }
+
 void display() {
 	auto t = CTime::GetMicroS();
 	glClear(GL_COLOR_BUFFER_BIT);
-	dd->DrawCurve(1);
-	/*
 	double bias_x = 0;
-	for (int i = 0; i < dd_ary.size(); i++) {
+	for (int i = 0; i < 21; i++) {
 		glPushMatrix();	//在当前 gl 的状态上 复制一个新的状态 
 		glLoadIdentity();// 初始化矩阵
-		glTranslated(bias_x, 0, 0);	// 平移坐标系
-		if(!((bias_x+ dd_ary[i]._mtx[0].size())<wc._x_min // 
-			|| bias_x > wc._x_max
-			))
-			dd_ary[i].DrawCurve(display_index + 1);
-		bias_x += dd_ary[i]._mtx[0].size();
+		// 平移坐标系
+		if (!(((*ptr.get())[i].end) < wc._x_min // 
+			|| ((*ptr.get())[i].begin) > wc._x_max)
+			) {
+			glTranslated((*ptr.get())[i].begin, 0, 0);
+			(*ptr.get())[i].dd.DrawCurve(display_index + 1);
+		}
 		glPopMatrix();
 	}
-	*/
 	glFinish();
 	t = CTime::GetMicroS() - t;
 	cout << "display(us):\t" << t << endl;
@@ -88,18 +97,23 @@ int  main(int argc, char *argv[]) {
 	glutDisplayFunc(display);
 	glutKeyboardUpFunc([](unsigned char key, int x, int y) {if (char(key) == 'z') { display_index ^= 1;display(); }});
 	printf("%s\n", glGetString(GL_VENDOR));
-
-
 	//DataDrawGL::NoramlData2BinData("../1.txt", "../1.bin");
 	
-	dd = new DataDrawGL();
-	auto t0 = CTime::GetMicroS();
-	dd->Open("../1.bin");
-	auto t1 = CTime::GetMicroS();
-	cout << t1 - t0 << endl;
-	//for (int i = 0; i < 10; i++)
-		//dd_ary.push_back(dd);
-	wc = WindowControl(w, h, 0, dd->_len-1, dd->_data_min, dd->_data_max);
+	ptr.reset(new CircularQueue<Node>());
+	(*ptr.get())[0].dd.Open("../1.bin");
+	(*ptr.get())[0].begin = 0;
+	(*ptr.get())[0].end = (*ptr.get())[0].dd._len;
+	for (int i = 1; i <= 10; i++) {
+		(*ptr.get())[i].dd.Open("../1.bin");
+		(*ptr.get())[i].begin = (*ptr.get())[i - 1].end;
+		(*ptr.get())[i].end = (*ptr.get())[i].begin+(*ptr.get())[i].dd._len;
+
+		(*ptr.get())[-i].dd.Open("../1.bin");
+		(*ptr.get())[-i].end = (*ptr.get())[-i + 1].begin;
+		(*ptr.get())[-i].begin = (*ptr.get())[-i].end - (*ptr.get())[-i].dd._len;
+	}
+		
+	wc = WindowControl(w, h, 0, (*ptr.get())[0].dd._len, (*ptr.get())[0].dd._data_min, (*ptr.get())[0].dd._data_max);
 	glutMainLoop();
 	return 0;
 }
