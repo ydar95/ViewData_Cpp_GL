@@ -193,3 +193,7 @@ void DataDrawGL::create_curve_buff() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[2]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, buff_nums*buff_len * sizeof(GLuint), nullptr, GL_DYNAMIC_DRAW_ARB);
 }
+
+void DataDrawGL::create_block_data() {
+	
+}

@@ -7,7 +7,7 @@ template<class Ty>
 class CircularQueue
 {
 public:
-	CircularQueue(uint32_t In_left = 10, uint32_t In_right = 10) 
+	CircularQueue(uint32_t In_left = 2, uint32_t In_right = 2) 
 		:_left(In_left), _right(In_right), _size(In_left + In_right + 1)
 	{
 		_ptr= std::shared_ptr<Ty>(new Ty[_size], std::default_delete<Ty[]>());
