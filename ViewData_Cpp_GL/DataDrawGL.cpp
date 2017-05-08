@@ -10,7 +10,7 @@
 #include<cmath>
 #include<limits> 
 #include<algorithm>
-#include<list>
+
 using namespace std;
 
 void DataDrawGL::NoramlData2BinData(const std::string &normal_filename, const std::string &bin_filename) {
@@ -119,14 +119,23 @@ void DataDrawGL::Open(const std::string& filename) {
 	this->load_bin_data(filename);
 	this->create_curve_data();
 	this->create_curve_vbo();
+
+	create_block_data();
+	create_block_vbo();
 }
 void DataDrawGL::DrawCurve(int index) {
-	glBindVertexArray(vao[0]);
-	glColor3f(0.5, 0.8, 0.1);
-	int bias = 0;
-	for (int i = 0; i < _nums; i++) {
-		glDrawElements(GL_LINE_STRIP, _len, GL_UNSIGNED_INT, ((GLuint*)NULL + (bias)));
-		bias += _len;
+	if (index == 0) {
+		glBindVertexArray(vao[0]);
+		glColor3f(0.5, 0.8, 0.1);
+		int bias = 0;
+		for (int i = 0; i < _nums; i++) {
+			glDrawElements(GL_LINE_STRIP, _len, GL_UNSIGNED_INT, ((GLuint*)NULL + (bias)));
+			bias += _len;
+		}
+	}
+	else {
+		glBindVertexArray(vao[1]);
+		glDrawElements(GL_QUADS, (_nums - 1)*(_len - 1)*4, GL_UNSIGNED_INT, ((GLuint*)NULL + (0)));
 	}
 }
 void DataDrawGL::create_curve_data() {
@@ -195,5 +204,84 @@ void DataDrawGL::create_curve_buff() {
 }
 
 void DataDrawGL::create_block_data() {
-	
+	auto data_ptr = _data.get();
+	auto block_gray_ptr = _block_gray.get();
+	auto block_rgb_ptr = _block_rgb.get();
+	auto block_position_ptr = _block_position.get();
+	auto block_indexs_ptr = _block_indexs.get();
+
+	for (uint32_t num = 0; num < this->_nums; num++) {
+		float t_curve_min = this->_curve_max_min_ary[num].x;
+		float t_curve_max = this->_curve_max_min_ary[num].y;
+		for (int index = 0; index < this->_len; index++) {
+			float color = (*data_ptr - t_curve_min) / (t_curve_max - t_curve_min);
+			
+			float red = color;
+			float green = color < 0.5 ? color : 1 - color;
+			green = std::min<float>(green * 2, 1.0);
+			float blue = 1 - color;
+			*block_gray_ptr = Vec3(color, color, color);
+			*block_rgb_ptr =  Vec3(red, green, blue);
+			*block_position_ptr = Vec2(index, _data_max - ((_data_max - _data_min)/_nums * (num)) );
+			
+			++block_gray_ptr;
+			++block_rgb_ptr;
+			++block_position_ptr;
+			++data_ptr;
+		}
+	}
+
+	for (uint32_t num = 0; num < this->_nums-1; num++) {
+		for (int index = 0; index < this->_len-1; index++) {
+			*(block_indexs_ptr++) = num*_len + index;
+			*(block_indexs_ptr++) = num*_len + index+1;
+			*(block_indexs_ptr++) = (num+1)*_len + index+1;
+			*(block_indexs_ptr++) = (num+1)*_len + index;
+		}
+	}
+}
+void DataDrawGL::create_block_buff() {
+	if (vbo[3] != 0) {
+		glDeleteBuffers(3, vbo+3);
+		vbo[3] = vbo[4] = vbo[5] = 0;
+	}
+
+	if (vao[1] != 0) {
+		glDeleteVertexArrays(1, &vao[1]);
+	}
+
+	glGenVertexArrays(1, vao+1);
+
+	glBindVertexArray(vao[1]);
+	glGenBuffers(3, vbo + 3);
+	//顶点
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
+	glBufferData(GL_ARRAY_BUFFER, buff_nums*buff_len * sizeof(Vec2), nullptr, GL_DYNAMIC_DRAW_ARB);
+	glVertexPointer(2, GL_FLOAT, 0, nullptr);
+	glEnableClientState(GL_VERTEX_ARRAY);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[4]);
+	glBufferData(GL_ARRAY_BUFFER, buff_nums*buff_len * sizeof(Vec3), nullptr, GL_DYNAMIC_DRAW_ARB);
+	glColorPointer(3, GL_FLOAT, 0, nullptr);
+	glEnableClientState(GL_COLOR_ARRAY);
+
+	// GL_ELEMENT_ARRAY_BUFFER（表示索引数据），用索引数据初始化缓冲区对象
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[5]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, buff_block_nums*4 * sizeof(GLuint), nullptr, GL_DYNAMIC_DRAW_ARB);
+}
+void DataDrawGL::create_block_vbo() {
+	//---------------			创建曲线
+	glBindVertexArray(vao[1]);
+	//glGenBuffers(3, vbo + 0);
+	//顶点
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, _nums*_len * sizeof(Vec2), _block_position.get());
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[4]);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, _nums*_len * sizeof(Vec3), _block_gray.get());
+
+
+	// GL_ELEMENT_ARRAY_BUFFER（表示索引数据），用索引数据初始化缓冲区对象
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[5]);
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0,((_nums-1)*(_len-1))*4* sizeof(GLuint), _block_indexs.get());
 }

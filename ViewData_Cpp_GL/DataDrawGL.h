@@ -56,7 +56,7 @@ private:
 
 	/// block	将 彩色图&灰色图 成为block , 彩色 rgb ,灰色 gray
 	std::shared_ptr<Vec3>		_block_rgb;
-	std::shared_ptr<RealType>	_block_gray;	
+	std::shared_ptr<Vec3>		_block_gray;
 	std::shared_ptr<Vec2>		_block_position;//坐标
 	std::shared_ptr<GLuint>		_block_indexs;
 
@@ -74,17 +74,19 @@ public:
 		_curve_vec.reset(new Vec2[buff_len*buff_nums], std::default_delete<Vec2[]>());
 		vao[0] = vao[1] = 0;
 		vbo[0] = vbo[1] = vbo[2] = vbo[3] = vbo[4] = vbo[5] = 0;
-		create_curve_buff();
+		
 		
 		// 一个点 一种颜色
 		_block_rgb.reset(new Vec3[buff_len*buff_nums], std::default_delete<Vec3[]>());
-		_block_gray.reset(new RealType[buff_len*buff_nums], std::default_delete<RealType[]>());
+		_block_gray.reset(new Vec3[buff_len*buff_nums], std::default_delete<Vec3[]>());
 		// 一个点一个坐标
 		_block_position.reset(new Vec2[buff_len*buff_nums], std::default_delete<Vec2[]>());
 		// 当前可能最大的索引数量
 		buff_block_nums = (buff_len - 1)*(buff_nums - 1);
-		_block_indexs.reset(new GLuint[buff_block_nums], std::default_delete<GLuint[]>());
-		
+		_block_indexs.reset(new GLuint[buff_block_nums*4], std::default_delete<GLuint[]>());
+
+		create_curve_buff();
+		create_block_buff();
 	}
 	~DataDrawGL() {
 		if (vbo[0] != 0) {

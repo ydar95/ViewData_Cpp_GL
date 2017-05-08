@@ -46,7 +46,7 @@ void display() {
 			|| ((*ptr.get())[i].begin) > wc._x_max)
 			) {
 			glTranslated((*ptr.get())[i].begin, 0, 0);
-			(*ptr.get())[i].dd.DrawCurve(display_index + 1);
+			(*ptr.get())[i].dd.DrawCurve(0);
 		}
 		glPopMatrix();
 	}
